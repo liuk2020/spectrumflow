@@ -1,18 +1,30 @@
 # spectrumflow
 
-个人 Python 科研数据处理与科技绘图包，服务于仿星器研究。
+个人 Python 科研数据处理包，服务于仿星器研究。
 
-当前仅包含源码结构和类占位符，尚未实现数值计算、文件读取或绘图功能。
+目前提供 `toroidalfield`，用于表示和计算环面上的实标量场。
 
-| 源码文件（相对 `src/spectrumflow/`） | 类占位符 | 职责 |
-| --- | --- | --- |
-| `toroidalfield/field.py` | `ToroidalField` | 双角标量场的 Fourier 谱表示与数值运算 |
-| `geometry/surface.py` | `Surface` | 环面曲面表示与几何量计算 |
-| `geometry/curve.py` | `Curve` | 空间曲线表示与几何量计算 |
-| `current/surface_current.py` | `SurfaceCurrent` | 环面上的面电流分布 |
-| `current/line_current.py` | `LineCurrent` | 沿空间曲线的线电流 |
-| `VMEC/output.py` | `VmecOutput` | VMEC 输出读取、约定转换与后处理 |
-| `SPEC/output.py` | `SpecOutput` | SPEC 输出读取、约定转换与后处理 |
+## 安装与构建
+
+要求 Python >= 3.10。
+
+```bash
+python -m pip install .
+python -m pip install -e '.[dev]'    # 本地开发
+python -m pytest
+python -m build
+```
+
+## 快速使用
+
+```python
+import numpy as np
+from spectrumflow import ToroidalField
+
+field = ToroidalField.from_modes({(0, 0): 1.0, (1, 0): 0.2}, nfp=1)
+theta = np.linspace(0, 2 * np.pi, 100, endpoint=False)
+values = field(theta, 0.0)
+```
 
 ## 许可证
 

@@ -1,0 +1,2 @@
+include examples/*.py examples/*.md
+include tests/README.md

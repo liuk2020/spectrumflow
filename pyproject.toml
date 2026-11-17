@@ -4,12 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spectrumflow"
-version = "0.0.0"
+version = "0.1.0"
 description = "Scientific data processing and plotting for stellarator research"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
+dependencies = ["numpy>=1.23", "scipy>=1.9"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.6"]
+dev = ["pytest>=7", "build>=1", "matplotlib>=3.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["spectrumflow*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
