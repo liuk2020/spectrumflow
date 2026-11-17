@@ -13,3 +13,8 @@
 | `current/line_current.py` | `LineCurrent` | 沿空间曲线的线电流 |
 | `VMEC/output.py` | `VmecOutput` | VMEC 输出读取、约定转换与后处理 |
 | `SPEC/output.py` | `SpecOutput` | SPEC 输出读取、约定转换与后处理 |
+
+## 许可证
+
+Copyright (c) 2026 Ke Liu。项目采用 GNU General Public License v3.0，
+详见 [LICENSE](LICENSE)。
