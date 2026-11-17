@@ -15,11 +15,10 @@ src/spectrumflow/
     toroidalfield/  # 二维场的谱表示与数值运算
     geometry/       # 环面、曲线及几何计算
     current/        # 电流，包括面电流和线电流
-    VMEC/           # VMEC 的 IO 以及数据处理
-    SPEC/           # SPEC 的 IO 以及数据处理
+    VMEC/           # VMEC 的 后处理
+    SPEC/           # SPEC 的 后处理
 tests/
 examples/           # 小型、可复现的科研脚本
-docs/               # 简短的使用说明与数学约定
 pyproject.toml
 ```
 
