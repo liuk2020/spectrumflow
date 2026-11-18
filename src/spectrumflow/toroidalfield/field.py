@@ -4,10 +4,16 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from numbers import Integral, Real
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy.signal import convolve2d
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.colors import Colormap
+    from matplotlib.contour import QuadContourSet
 
 
 def _integer(value: int, name: str, minimum: int = 0) -> int:
@@ -186,6 +192,55 @@ class ToroidalField:
             raise ValueError("sample counts must resolve all retained modes")
         theta, zeta = angular_grid(ntheta, nzeta, self.nfp)
         return theta, zeta, self(theta[:, None], zeta[None, :])
+
+    def plot(
+        self,
+        *,
+        ax: Axes | None = None,
+        ntheta: int = 129,
+        nzeta: int = 129,
+        one_period: bool = True,
+        filled: bool = True,
+        cmap: str | Colormap | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        fontsize: float = 18,
+        tick_fontsize: float | None = None,
+        usetex: bool = True,
+        figsize: tuple[float, float] | None = None,
+        colorbar: bool = False,
+        colorbar_kwargs: Mapping[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> tuple[Axes, QuadContourSet]:
+        r"""Plot theta versus zeta; return (axes, contour artist).
+
+        Both axes show the actual parameter angles in radians.
+        ``one_period`` selects zeta in [0, 2*pi/nfp] or [0, 2*pi]; theta spans
+        [0, 2*pi]. The endpoint-inclusive grid has shape (ntheta, nzeta).
+
+        Default styling uses tol:sunset, pi ticks and 18-point labels/ticks.
+        ``cmap`` accepts a Matplotlib name/object or a namespaced cmap name
+        (e.g. "tol:sunset"); ``colors`` in kwargs overrides the default palette.
+        ``tick_fontsize`` defaults to ``fontsize``. ``usetex=True`` requires a
+        working LaTeX installation; otherwise Matplotlib mathtext is used.
+        Text settings belong to the artists and do not modify global rcParams.
+
+        ``figsize`` (inches) applies only when creating axes. ``colorbar=True``
+        adds a colorbar to ax.figure, configurable via ``colorbar_kwargs``
+        (e.g. label, orientation); it is accessible as ``artist.colorbar``.
+        Default scalar colorbar ticks use math mode; explicit formats are kept.
+        Remaining kwargs go to ax.contourf/contour (levels, colors, vmin, vmax,
+        etc.). No show() or save is performed.
+        """
+        from .plotting import _plot_field
+
+        return _plot_field(
+            self, ax=ax, ntheta=ntheta, nzeta=nzeta, one_period=one_period,
+            filled=filled, cmap=cmap, xlabel=xlabel, ylabel=ylabel,
+            fontsize=fontsize, tick_fontsize=tick_fontsize, usetex=usetex,
+            figsize=figsize, colorbar=colorbar, colorbar_kwargs=colorbar_kwargs,
+            **kwargs,
+        )
 
     def derivative(self, theta_order: int = 0, zeta_order: int = 0) -> ToroidalField:
         """Differentiate in parameter angles, including mixed/higher derivatives."""
