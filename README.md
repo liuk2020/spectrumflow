@@ -42,10 +42,7 @@ values = field(theta, 0.0)
 笛卡尔坐标使用右手系 `(R*cos(phi), R*sin(phi), Z)`。
 Boozer 角的磁坐标含义由输入平衡数据确定，几何类本身不施加磁场约束。
 
-激活已安装 spectrumflow 的 Python 环境后，将下面整段复制到终端即可运行：
-
-```bash
-python - <<'PY'
+```
 import numpy as np
 from spectrumflow import ToroidalField
 from spectrumflow.geometry import CylindricalSurface
@@ -63,7 +60,6 @@ area, volume = surface.area_volume()
 
 print(f"位置数组形状：{xyz.shape}，度规张量形状：{g.shape}")
 print(f"面积：{area:.8f} m²，体积：{volume:.8f} m³")
-PY
 ```
 
 角度输入遵循 NumPy 广播：两个一维数组按点配对，使用
