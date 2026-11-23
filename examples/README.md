@@ -1,5 +1,8 @@
 # 示例
 
+`python examples/toroidal_surface.py` 演示柱坐标角与 Boozer 角环面、谱度规及
+NPZ 往返读写；用圆环面的解析面积和体积验证积分，不需要外部数据或绘图依赖。
+
 安装 `spectrumflow[plot]` 后运行 `python examples/toroidal_field.py`，
 演示解析场构造、FFT 重建、微分与绘图，无需外部数据。
 参照 tfpy 案例，在同一坐标轴上叠加两种绘图：`field1` 通过原函数在单周期、
