@@ -97,6 +97,27 @@ phi 随 zeta 严格单调、没有折叠；不会将固定 Boozer 角当作物�
 `surface.cross_section(theta, phi)` 可独立计算截面的 `(R, Z)`，输入遵循
 NumPy 广播，两个输出均为广播后的形状；与 `rz(theta, zeta)` 的角度含义不同。
 
+两种环面也可绘制三维曲面，返回三维坐标轴和可继续调整的曲面 artist：
+
+```python
+ax, artist = surface.plot_3d()  # 默认绘制完整环面
+ax, artist = surface.plot_3d(
+    one_period=True, ntheta=129, nzeta=129,
+    fontsize=17, usetex=True, color="steelblue", alpha=0.8,
+)
+```
+
+`plot_3d()` 使用 `position()` 计算笛卡尔坐标，保留 Boozer 的 omega 修正和环向
+方向约定。默认参数角范围为 theta、zeta 均在 `[0, 2*pi]`；`one_period=True`
+将 zeta 范围改为 `[0, 2*pi/nfp]`，Boozer 曲面的周期边缘不一定是固定物理 phi。
+含重复端点的网格轴序为 `(theta, zeta)`，默认采样数为 `(129, 257)`。
+默认绘制全部采样网格，可通过 `rcount`、`ccount` 或 `rstride`、`cstride`
+显式降低绘图分辨率；应提高采样数检查几何收敛。
+三个坐标轴保持相同物理比例，标签为 `$x$`、`$y$`、`$z$`，不显示单位、不加标题；
+坐标数据仍为米。默认标签和刻度为 17 号字，含刻度数字的文字使用 LaTeX 渲染。
+支持 `usetex=False`、`tick_fontsize`、`figsize` 和已有的三维 `ax`，其余参数传给
+Matplotlib 的 `plot_surface()`；不修改全局样式，不自动显示或保存。
+
 ## 许可证
 
 Copyright (c) 2026 Ke Liu。项目采用 GNU General Public License v3.0，

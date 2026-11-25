@@ -16,6 +16,8 @@ from ..toroidalfield import ToroidalField
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.lines import Line2D
+    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 VectorFields = tuple[ToroidalField, ToroidalField, ToroidalField]
 
@@ -171,6 +173,45 @@ class Surface(ABC):
         return _plot_cross_section(
             self, phi, ax=ax, ntheta=ntheta, fontsize=fontsize,
             tick_fontsize=tick_fontsize, usetex=usetex, figsize=figsize, **kwargs,
+        )
+
+    def plot_3d(
+        self,
+        *,
+        ax: Axes3D | None = None,
+        ntheta: int = 129,
+        nzeta: int = 257,
+        one_period: bool = False,
+        fontsize: float = 17,
+        tick_fontsize: float | None = None,
+        usetex: bool = True,
+        figsize: tuple[float, float] | None = None,
+        **kwargs: Any,
+    ) -> tuple[Axes3D, Poly3DCollection]:
+        """Plot the surface in Cartesian coordinates; return (3D axes, artist).
+
+        The endpoint-inclusive parameter grid has shape (ntheta, nzeta),
+        theta in [0, 2*pi], and zeta in [0, 2*pi] by default. one_period=True
+        restricts zeta to [0, 2*pi/nfp]; for Boozer surfaces its edges need
+        not have constant physical phi. position() supplies coordinates in
+        metres, including toroidal_sign and the Boozer omega correction.
+
+        Axes use equal physical scales, no title, and x, y, z labels without
+        displayed units. Labels and mathematical numeric ticks default to
+        17 points and external LaTeX rendering (requires LaTeX); usetex=False
+        uses Matplotlib mathtext. No global rcParams changes, show() or save.
+
+        ax must be 3D; figsize applies only to new axes. kwargs go to
+        ax.plot_surface() (e.g. color, cmap, alpha, linewidth). The entire
+        sampled mesh is drawn unless explicit rcount/ccount or rstride/cstride
+        are provided. Increase sample counts to check geometric convergence.
+        """
+        from .surface_plotting import _plot_3d
+
+        return _plot_3d(
+            self, ax=ax, ntheta=ntheta, nzeta=nzeta, one_period=one_period,
+            fontsize=fontsize, tick_fontsize=tick_fontsize, usetex=usetex,
+            figsize=figsize, **kwargs,
         )
 
     def covariant_basis(self) -> tuple[VectorFields, VectorFields]:
