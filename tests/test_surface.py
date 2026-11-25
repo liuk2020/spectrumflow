@@ -85,6 +85,49 @@ def nonaxisymmetric_surface(kind, sign):
 
 @pytest.mark.parametrize("kind", [CylindricalSurface, BoozerSurface])
 @pytest.mark.parametrize("sign", [-1, 1])
+def test_cross_section_inverts_physical_angle_with_broadcasting(kind, sign):
+    surface = nonaxisymmetric_surface(kind, sign)
+    theta = np.linspace(0, 2*np.pi, 13)[:, None]
+    zeta = np.array([-8.1, -0.7, 0, 0.4, 7.2])[None, :]
+    phi = surface.phi(theta, zeta)
+    expected = surface.rz(theta, zeta)
+    actual = surface.cross_section(theta, phi)
+    assert actual[0].shape == (13, 5)
+    assert_allclose(actual, expected, rtol=1e-12, atol=1e-12)
+    assert_allclose(
+        surface.cross_section(0.3, surface.phi(0.3, 0.7)),
+        surface.rz(0.3, 0.7), rtol=1e-12, atol=1e-12,
+    )
+    assert surface.cross_section([], [])[0].shape == (0,)
+
+
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_cross_section_with_large_angle_shift_and_zero_shift(sign):
+    source = nonaxisymmetric_surface(CylindricalSurface, sign)
+    theta = np.linspace(0, 2*np.pi, 17)
+    for shift in (0, 5.7):
+        surface = BoozerSurface(
+            source.r, source.z, ToroidalField.constant(shift, nfp=source.nfp),
+            toroidal_sign=sign,
+        )
+        assert_allclose(
+            surface.cross_section(theta, 0.2),
+            source.rz(theta, sign*(0.2-shift)), rtol=1e-12, atol=1e-12,
+        )
+
+
+def test_cross_section_rejects_invalid_physical_angles():
+    surface = nonaxisymmetric_surface(BoozerSurface, 1)
+    with pytest.raises(TypeError, match="real"):
+        surface.cross_section(0, 1j)
+    with pytest.raises(ValueError, match="finite"):
+        surface.cross_section(0, np.nan)
+    with pytest.raises(ValueError):
+        surface.cross_section(np.zeros(2), np.zeros(3))
+
+
+@pytest.mark.parametrize("kind", [CylindricalSurface, BoozerSurface])
+@pytest.mark.parametrize("sign", [-1, 1])
 def test_nonaxisymmetric_basis_matches_position_derivatives_and_periodicity(kind, sign):
     surface = nonaxisymmetric_surface(kind, sign)
     theta, zeta = np.random.default_rng(13).uniform(0.2, 1.5, (2, 11))

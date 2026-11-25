@@ -6,11 +6,16 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, replace
 from numbers import Integral
 from os import PathLike
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..toroidalfield import ToroidalField
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.lines import Line2D
 
 VectorFields = tuple[ToroidalField, ToroidalField, ToroidalField]
 
@@ -103,6 +108,70 @@ class Surface(ABC):
         r, z = self.rz(theta, zeta)
         phi = self.phi(theta, zeta)
         return np.stack((r * np.cos(phi), r * np.sin(phi), z), axis=-1)
+
+    def cross_section(
+        self, theta: ArrayLike, phi: ArrayLike
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """Return (R, Z) in metres at poloidal theta and physical phi [rad].
+
+        Inputs broadcast; each output has the broadcast shape. Unlike rz(),
+        phi is the cylindrical angle, not the toroidal parameter zeta.
+        Boozer surfaces invert phi = toroidal_sign*zeta + omega numerically;
+        this requires phi to be strictly monotone in zeta at fixed theta
+        (no folds). Angles may lie outside the first field period.
+        """
+        from scipy.optimize import brentq
+
+        theta, phi = _angles(theta, phi)
+        shift = self._angle_shift
+        zeta = self.toroidal_sign * phi
+        amplitude = float(np.sum(np.abs(shift.coefficients)))
+        if amplitude:
+            # |omega| <= sum |C_mn| brackets the unwrapped inverse for either
+            # toroidal direction. Padding keeps the endpoints strictly apart.
+            width = amplitude + 1
+            zeta = np.array([
+                brentq(
+                    lambda angle: self.toroidal_sign * angle + shift(t, angle) - p,
+                    center - width, center + width, xtol=1e-13,
+                )
+                for t, p, center in zip(theta.flat, phi.flat, zeta.flat)
+            ]).reshape(theta.shape)
+        return self.rz(theta, zeta)
+
+    def plot_cross_section(
+        self,
+        phi: ArrayLike | None = None,
+        *,
+        ax: Axes | None = None,
+        ntheta: int = 361,
+        fontsize: float = 17,
+        tick_fontsize: float | None = None,
+        usetex: bool = True,
+        figsize: tuple[float, float] | None = None,
+        **kwargs: Any,
+    ) -> tuple[Axes, list[Line2D]]:
+        """Plot R-Z sections at physical cylindrical angles phi [rad].
+
+        phi is a scalar or nonempty 1D array, default [0, pi/nfp]. All
+        sections share an equal-aspect axes; return (axes, lines) in input
+        order. Each closed curve samples ntheta points including both ends
+        of theta in [0, 2*pi]. Boozer inversion assumes no toroidal folds;
+        see cross_section(). Increase ntheta to check geometric convergence.
+
+        No title is added; labels are R and Z without displayed units (data
+        remain in metres). Numeric ticks use math mode. Labels and ticks
+        default to 17 points and external LaTeX rendering
+        (requires LaTeX); usetex=False uses Matplotlib mathtext. Styles apply
+        to artists, without changing global rcParams. figsize applies only
+        to new axes; kwargs go to ax.plot(). No show() or save is performed.
+        """
+        from .surface_plotting import _plot_cross_section
+
+        return _plot_cross_section(
+            self, phi, ax=ax, ntheta=ntheta, fontsize=fontsize,
+            tick_fontsize=tick_fontsize, usetex=usetex, figsize=figsize, **kwargs,
+        )
 
     def covariant_basis(self) -> tuple[VectorFields, VectorFields]:
         r"""Return (e_theta, e_zeta) as triples of spectral fields, in m/rad.

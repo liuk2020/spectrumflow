@@ -77,6 +77,26 @@ print(f"面积：{area:.8f} m²，体积：{volume:.8f} m³")
 应提高采样数检查收敛。环向参数增加 `2*pi/nfp` 时，位置旋转一个场周期，
 R、Z 和度规周期重复。
 
+安装 `spectrumflow[plot]` 后，两种环面均可绘制固定物理柱坐标角的 R–Z 截面：
+
+```python
+ax, lines = surface.plot_cross_section()  # 默认 phi=[0, np.pi/surface.nfp]
+ax, lines = surface.plot_cross_section(
+    phi=[0, 0.2], ntheta=361, fontsize=17, usetex=True,
+)
+```
+
+`phi` 单位为弧度，可传单个角或一维角数组；所有截面叠加在同一等比例坐标轴上，
+返回轴及按输入顺序排列的曲线。默认不添加标题，轴标签为 `$R$`、`$Z$`，
+不显示单位；标签、刻度为 17 号字，刻度数字使用数学模式，并调用外部 LaTeX
+渲染（需本机安装 LaTeX）；`usetex=False` 可使用 Matplotlib 内置渲染。
+支持传入 `ax`、`figsize`、`tick_fontsize` 以及 `color`、`linewidth` 等曲线参数，
+不修改全局样式，不自动显示或保存。
+Boozer 环面会反解 `phi = toroidal_sign*zeta + omega`，要求固定 theta 时
+phi 随 zeta 严格单调、没有折叠；不会将固定 Boozer 角当作物理截面。
+`surface.cross_section(theta, phi)` 可独立计算截面的 `(R, Z)`，输入遵循
+NumPy 广播，两个输出均为广播后的形状；与 `rz(theta, zeta)` 的角度含义不同。
+
 ## 许可证
 
 Copyright (c) 2026 Ke Liu。项目采用 GNU General Public License v3.0，
